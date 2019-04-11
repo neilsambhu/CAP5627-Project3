@@ -399,7 +399,7 @@ def buildModel(pathBase):
     
     return model
     
-def RandomForest(model, train_x, train_x_Landmarks, train_y, test_x, test_x_Landmarks, test_y):
+def Exp3Fusion(model, train_x, train_x_Landmarks, train_y, test_x, test_x_Landmarks, test_y):
 #    keras.backend.clear_session()
 #    model.summary()
     layer_name = 'dense_2'
