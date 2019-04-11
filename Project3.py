@@ -398,6 +398,37 @@ def buildModel(pathBase):
             metrics=["accuracy"])
     
     return model
+
+
+
+def RandomForest(model, train_x, train_x_Landmarks, train_y, test_x, test_x_Landmarks, test_y):
+
+    #layer_name = 'dense_2'
+    #extract = Model(inputs=model.input, outputs=model.get_layer(layer_name).output)
+    #features = extract.predict(train_x)
+
+    clf = RandomForestClassifier(n_estimators=10).fit(train_x_Landmarks, train_y)
+#    clf = SVC(kernel='rbf', C=10, verbose=False).fit(features, train_y)
+#    predict_y = clf.predict(extract.predict(test_x))
+    predict_y = clf.predict(extract.predict(test_x))
+
+#     confusion matrix, classification accuracy, precision, recall, and binary F1 score
+    conf_mat = confusion_matrix(test_y, predict_y)
+    acc = sklearn.metrics.accuracy_score(test_y, predict_y)
+    precision = sklearn.metrics.precision_score(test_y, predict_y)
+    recall = sklearn.metrics.recall_score(test_y, predict_y)
+    f1_score = sklearn.metrics.f1_score(test_y, predict_y)
+    
+    print('Confusion matrix (RF):\n{}\nClassification accuracy:{}\nPrecision:\t\t{}\nRecall:\t\t\t{}\nBinary F1 score: \t{}'.format(
+            conf_mat, 
+            acc,
+            precision,
+            recall,
+            f1_score
+            ))
+
+
+
     
 def Exp3Fusion(model, train_x, train_x_Landmarks, train_y, test_x, test_x_Landmarks, test_y):
 #    keras.backend.clear_session()
