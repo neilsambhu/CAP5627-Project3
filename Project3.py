@@ -399,11 +399,10 @@ def buildModel(pathBase):
     
     return model
     
-def RandomForest(model,train_x, train_y, test_x, test_y):
+def RandomForest(model, train_x, train_x_Landmarks, train_y, test_x, test_x_Landmarks, test_y):
 #    keras.backend.clear_session()
-#    model = load_model('/data/CAP5627/Group2/Project2/Model_45.hdf5')
-##    model.summary()
-    layer_name = 'dense_3'
+#    model.summary()
+    layer_name = 'dense_2'
     extract = Model(inputs=model.input, outputs=model.get_layer(layer_name).output)
     features = extract.predict(train_x)
 #    extract = []
@@ -433,13 +432,13 @@ def RandomForest(model,train_x, train_y, test_x, test_y):
 #    features = functor([train_x, 1.])
 #    print(layer_outs)
         
-    clf = RandomForestClassifier(n_estimators=10).fit(features,train_y)
-#    training_data = np.concatenate((features, train_x_Landmarks), axis=1)
-#    clf = RandomForestClassifier(n_estimators=10).fit(training_data, train_y)
+#    clf = RandomForestClassifier(n_estimators=10).fit(features,train_y)
+    training_data = np.concatenate((features, train_x_Landmarks), axis=1)
+    clf = RandomForestClassifier(n_estimators=10).fit(training_data, train_y)
 #    clf = SVC(kernel='rbf', C=10, verbose=False).fit(features, train_y)
-    predict_y = clf.predict(extract.predict(test_x))
-#    testing_data = np.concatenate((extract.predict(test_x), test_x_Landmarks), axis=1)
-#    predict_y = clf.predict(testing_data)
+#    predict_y = clf.predict(extract.predict(test_x))
+    testing_data = np.concatenate((extract.predict(test_x), test_x_Landmarks), axis=1)
+    predict_y = clf.predict(testing_data)
 
 #     confusion matrix, classification accuracy, precision, recall, and binary F1 score
     conf_mat = confusion_matrix(test_y, predict_y)
