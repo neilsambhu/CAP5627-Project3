@@ -507,7 +507,10 @@ def RandomForest(model, train_x, train_x_Landmarks, train_y, test_x, test_x_Land
             ))
 
 
-
+def top_twenty(data):
+    x = len(data)
+    x_20 = (int)(0.20*x)
+    return data[:x_20], data[x_20:]
     
 def Exp3Fusion(model, train_x, train_x_Landmarks, train_y, test_x, test_x_Landmarks, test_y):
 #    keras.backend.clear_session()
@@ -571,6 +574,11 @@ if __name__ == "__main__":
     p_path, np_path = get_landmark_paths(LANDMARK_DATA)
     p_f, p_land = get_pain_landmarks(p_path[0:10])
     np_f, np_land = get_no_pain_landmarks(np_path[0:10])
+    
+    p_f_test, p_f_train = top_twenty(p_f)
+    np_f_test, np_f_train = top_twenty(np_f)
+    np_land_test, np_land_train = top_twenty(np_land)
+    p_land_test, p_land_train = top_twenty(p_land)
 #    print(np_f)
     ipp, inpp = get_imgs(IMG_DATA, p_f, np_f)
 #    print('p type: {}, np type: {}\np_f type: {}, p_land type: {}\nnp_f type: {}, np_land type: {}'.format(type(p), type(np), type(p_f), type(p_land), type(np_f), type(np_land)))
