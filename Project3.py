@@ -590,7 +590,7 @@ if __name__ == "__main__":
     p_land, np_land, ipp, inpp, p_ground_truth, np_ground_truth = file_io(10)
 #    print('p type: {}, np type: {}\np_f type: {}, p_land type: {}\nnp_f type: {}, np_land type: {}'.format(type(p), type(np), type(p_f), type(p_land), type(np_f), type(np_land)))
     # print('p_path shape: {}, np_path shape: {}\np_f shape: {}, p_land shape: {}\nnp_f shape: {}, np_land shape: {}'.format(np.shape(p_path), np.shape(np_path), np.shape(p_f), np.shape(p_land), np.shape(np_f), np.shape(np_land)))
-    print('p_land shape: {}, np_land shape: {}\nipp shape: {}, inpp shape: {}\p_ground_truth shape: {}, np_ground_truth shape: {}'.format(np.shape(p_land), np.shape(np_land), np.shape(ipp), np.shape(inpp), np.shape(p_ground_truth), np.shape(np_ground_truth)))
+    print('p_land shape: {}, np_land shape: {}\nipp shape: {}, inpp shape: {}\np_ground_truth shape: {}, np_ground_truth shape: {}'.format(np.shape(p_land), np.shape(np_land), np.shape(ipp), np.shape(inpp), np.shape(p_ground_truth), np.shape(np_ground_truth)))
 # #    print('Image reading started at {}'.format(str(datetime.datetime.now())))
 # #    test_x, test_y, train_x, train_y, val_x, val_y = readImages(pathBase)
 # #    test_x, test_x_Landmarks, test_y, train_x, train_x_Landmarks, train_y, val_x, val_x_Landmarks, val_y = readImages(pathBase)
