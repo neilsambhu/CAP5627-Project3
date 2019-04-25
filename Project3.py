@@ -32,6 +32,7 @@ from sklearn.metrics import confusion_matrix
 #from sklearn.metrics import recall_score
 #from sklearn.metrics import f1_score
 from keras import backend as K
+import sys
 
 from sklearn.utils import shuffle
 IMG_DATA = '/data/scanavan1/BP4D+/2D+3D/'
@@ -466,7 +467,7 @@ def buildModel(pathBase):
     
 #     multiple GPUs
     model = multi_gpu_model(model, gpus=16)
-    # compileì
+    # compile
     model.compile(
             loss = "sparse_categorical_crossentropy", 
 #            loss = 'binary_crossentropy',
@@ -536,14 +537,16 @@ def Exp3Fusion(model, train_x, train_x_Landmarks, train_y, test_x, test_x_Landma
 if __name__ == "__main__":
 #    pathBase = 'pain_classification/'
     pathBase = '/data/scanavan1/AffectiveComputing/Project2/pain_classification/'
-    p, np = get_landmark_paths(LANDMARK_DATA)
-    p_f, p_land = get_pain_landmarks(p[0:10000])
-    np_f, np_land = get_no_pain_landmarks(np[0:10000])
+    p_path, np_path = get_landmark_paths(LANDMARK_DATA)
+    p_f, p_land = get_pain_landmarks(p[0:10])
+    np_f, np_land = get_no_pain_landmarks(np[0:10])
 #    print(np_f)
     ipp, inpp = get_imgs(IMG_DATA, p_f, np_f)
-    
+#    print('p type: {}, np type: {}\np_f type: {}, p_land type: {}\nnp_f type: {}, np_land type: {}'.format(type(p), type(np), type(p_f), type(p_land), type(np_f), type(np_land)))
+    print('p shape: {}, np shape: {}\np_f shape: {}, p_land shape: {}\nnp_f shape: {}, np_land shape: {}'.format(p_path.shape, np_path.shape, p_f.shape, p_land.shape, np_f.shape, np_land.shape))
+    sys.exit("done")
 #    print('Image reading started at {}'.format(str(datetime.datetime.now())))
-    test_x, test_y, train_x, train_y, val_x, val_y = readImages(pathBase)
+#    test_x, test_y, train_x, train_y, val_x, val_y = readImages(pathBase)
 #    test_x, test_x_Landmarks, test_y, train_x, train_x_Landmarks, train_y, val_x, val_x_Landmarks, val_y = readImages(pathBase)
 #    print('Image reading finished at {}'.format(str(datetime.datetime.now())))
 
@@ -565,12 +568,13 @@ if __name__ == "__main__":
     # fit model to data
     time = strftime("%Y-%m-%d--%H-%M-%S", gmtime())
 #    checkpoint = ModelCheckpoint('{0}{1}_{{epoch:02d}}-{{val_acc:.2f}}.hdf5'.format(pathBase, time),monitor='val_acc', verbose=1, save_best_only=True, mode='max')
-    checkpoint = ModelCheckpoint('model.hdf5'.format(pathBase, time),monitor='val_acc', verbose=1, save_best_only=True, mode='max')
-    earlyStop = EarlyStopping('val_acc',0.001,25)
-    callbacks_list = [checkpoint, earlyStop]
-#    callbacks_list = [earlyStop]
+    # checkpoint = ModelCheckpoint('model.hdf5'.format(pathBase, time),monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+    # earlyStop = EarlyStopping('val_acc',0.001,25)
+    # callbacks_list = [checkpoint, earlyStop]
+   # callbacks_list = [earlyStop]
+
     model.fit(x=train_x, y=train_y, batch_size=1, epochs=100, verbose=2, 
-              callbacks=callbacks_list,
+              # callbacks=callbacks_list,
               validation_data=(val_x, val_y),
               initial_epoch=0)
 #    print(model.evaluate(test_x, test_y))
