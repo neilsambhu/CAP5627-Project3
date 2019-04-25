@@ -67,6 +67,8 @@ def get_pain_landmarks(pain_paths):
             for line in flandmarks.readlines():
                 landmarks.extend(line.strip().split(','))
             pain.append([float(v) for v in landmarks])
+            print(np.shape([float(v) for v in landmarks]))
+            sys.exit("pain")
     
     return frames, pain
 
