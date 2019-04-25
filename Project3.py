@@ -33,6 +33,84 @@ from sklearn.metrics import confusion_matrix
 #from sklearn.metrics import f1_score
 from keras import backend as K
 
+from sklearn.utils import shuffle
+IMG_DATA = '/data/scanavan1/BP4D+/2D+3D/'
+LANDMARK_DATA = '/data/scanavan1/BP4D+/3DFeatures/FacialLandmarks/'
+
+def get_landmark_paths(path):
+	pain = [] 
+	no_pain = []
+	p_frames = []
+	np_frames = []
+
+	if os.path.exists(path):
+		files = os.walk(path).__next__()[2]
+		f = [x.strip('.bndplus').split('_') for x in files]
+		for idx, val in enumerate(f):
+			if val[1] == 'T8':
+				pain.append(files[idx])	
+			else:
+				no_pain.append(files[idx])	
+	
+	b_pain = shuffle(pain) 	
+	b_no_pain = shuffle(no_pain)
+	return b_pain, b_no_pain
+
+
+def get_pain_landmarks(pain_paths):
+	frames = []
+	pain = []
+	
+	for v in pain_paths:
+		frames.append((v.strip('.bndplus').split('_')))
+		with open(LANDMARK_DATA + v) as flandmarks:
+			landmarks = []
+			for line in flandmarks.readlines():
+				landmarks.extend(line.strip().split(','))
+			pain.append([float(v) for v in landmarks])
+	
+	return frames, pain
+
+def get_no_pain_landmarks(no_pain_paths):
+	frames = []
+	no_pain = []
+
+	for v in no_pain_paths:
+		frames.append((v.strip('.bndplus').split('_')))
+		with open(LANDMARK_DATA + v) as flandmarks:
+			landmarks = []
+			for line in flandmarks.readlines():
+				landmarks.extend(line.strip().split(','))
+			no_pain.append([float(v) for v in landmarks])
+        
+	return frames, no_pain
+
+def get_imgs(path, p_frames, np_frames):
+	p_imgs = []
+	np_imgs = []
+	if os.path.exists(path):
+		subjects = os.walk(path).__next__()[1]
+		for subject in subjects:
+			tasks = os.walk(path + subjects[0]).__next__()[1]
+			for task in tasks:
+				files = os.walk(path + subject + '/' + task).__next__()[2]
+				imgs = [f.strip('.jpg') for f in files if f.endswith('.jpg')]
+				for frame in imgs:
+					if [subject, task, frame] in p_frames:
+						#pain.append(path + subject + '/' + task + '/' + frame + '.jpg')
+						ppath = path + subject + '/' + task + '/' + frame + '.jpg'
+						pimg = cv2.imread(ppath)
+						pimg_r = cv2.resize(pimg, (128, 128))
+						p_imgs.append(pimg_r.shape)
+					elif [subject, task, frame] in np_frames:
+						#no_pain.append(path + subject + '/' + task + '/' + frame + '.jpg')
+						nppath = path + subject + '/' + task + '/' + frame + '.jpg'
+						npimg = cv2.imread(nppath)
+						npimg_r = cv2.resize(npimg, (128, 128))
+						np_imgs.append(npimg_r.shape)
+	return p_imgs, np_imgs		
+
+
 #detect face in image
 def DetectFace(cascade, image, scale_factor=1.1):
     #convert image to grayscale
@@ -458,6 +536,11 @@ def Exp3Fusion(model, train_x, train_x_Landmarks, train_y, test_x, test_x_Landma
 if __name__ == "__main__":
 #    pathBase = 'pain_classification/'
     pathBase = '/data/scanavan1/AffectiveComputing/Project2/pain_classification/'
+    p, np = get_landmark_paths(LANDMARK_DATA)
+    p_f, p_land = get_pain_landmarks(p[0:10000])
+    np_f, np_land = get_no_pain_landmarks(np[0:10000])
+#    print(np_f)
+    ipp, inpp = get_imgs(IMG_DATA, p_f, np_f)
     
 #    print('Image reading started at {}'.format(str(datetime.datetime.now())))
     test_x, test_y, train_x, train_y, val_x, val_y = readImages(pathBase)
