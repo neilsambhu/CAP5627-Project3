@@ -39,78 +39,83 @@ IMG_DATA = '/data/scanavan1/BP4D+/2D+3D/'
 LANDMARK_DATA = '/data/scanavan1/BP4D+/3DFeatures/FacialLandmarks/'
 
 def get_landmark_paths(path):
-	pain = [] 
-	no_pain = []
-	p_frames = []
-	np_frames = []
+    pain = [] 
+    no_pain = []
 
-	if os.path.exists(path):
-		files = os.walk(path).__next__()[2]
-		f = [x.strip('.bndplus').split('_') for x in files]
-		for idx, val in enumerate(f):
-			if val[1] == 'T8':
-				pain.append(files[idx])	
-			else:
-				no_pain.append(files[idx])	
-	
-	b_pain = shuffle(pain) 	
-	b_no_pain = shuffle(no_pain)
-	return b_pain, b_no_pain
+    if os.path.exists(path):
+        files = os.walk(path).__next__()[2]
+        f = [x.strip('.bndplus').split('_') for x in files]
+        for idx, val in enumerate(f):
+            if val[1] == 'T8':
+                pain.append(files[idx]) 
+            else:
+                no_pain.append(files[idx])  
+    
+    b_pain = shuffle(pain)  
+    b_no_pain = shuffle(no_pain)
+    return b_pain, b_no_pain
 
 
 def get_pain_landmarks(pain_paths):
-	frames = []
-	pain = []
-	
-	for v in pain_paths:
-		frames.append((v.strip('.bndplus').split('_')))
-		with open(LANDMARK_DATA + v) as flandmarks:
-			landmarks = []
-			for line in flandmarks.readlines():
-				landmarks.extend(line.strip().split(','))
-			pain.append([float(v) for v in landmarks])
-	
-	return frames, pain
+    frames = []
+    pain = []
+    
+    for v in pain_paths:
+        frames.append((v.strip('.bndplus').split('_')))
+        with open(LANDMARK_DATA + v) as flandmarks:
+            landmarks = []
+            for line in flandmarks.readlines():
+                landmarks.extend(line.strip().split(','))
+            pain.append([float(v) for v in landmarks])
+    
+    return frames, pain
 
 def get_no_pain_landmarks(no_pain_paths):
-	frames = []
-	no_pain = []
+    frames = []
+    no_pain = []
 
-	for v in no_pain_paths:
-		frames.append((v.strip('.bndplus').split('_')))
-		with open(LANDMARK_DATA + v) as flandmarks:
-			landmarks = []
-			for line in flandmarks.readlines():
-				landmarks.extend(line.strip().split(','))
-			no_pain.append([float(v) for v in landmarks])
+    for v in no_pain_paths:
+        frames.append((v.strip('.bndplus').split('_')))
+        with open(LANDMARK_DATA + v) as flandmarks:
+            landmarks = []
+            for line in flandmarks.readlines():
+                landmarks.extend(line.strip().split(','))
+            no_pain.append([float(v) for v in landmarks])
         
-	return frames, no_pain
+    return frames, no_pain
 
 def get_imgs(path, p_frames, np_frames):
-	p_imgs = []
-	np_imgs = []
-	if os.path.exists(path):
-		subjects = os.walk(path).__next__()[1]
-		for subject in subjects:
-			tasks = os.walk(path + subjects[0]).__next__()[1]
-			for task in tasks:
-				files = os.walk(path + subject + '/' + task).__next__()[2]
-				imgs = [f.strip('.jpg') for f in files if f.endswith('.jpg')]
-				for frame in imgs:
-					if [subject, task, frame] in p_frames:
-						#pain.append(path + subject + '/' + task + '/' + frame + '.jpg')
-						ppath = path + subject + '/' + task + '/' + frame + '.jpg'
-						pimg = cv2.imread(ppath)
-						pimg_r = cv2.resize(pimg, (128, 128))
-						p_imgs.append(pimg_r.shape)
-					elif [subject, task, frame] in np_frames:
-						#no_pain.append(path + subject + '/' + task + '/' + frame + '.jpg')
-						nppath = path + subject + '/' + task + '/' + frame + '.jpg'
-						npimg = cv2.imread(nppath)
-						npimg_r = cv2.resize(npimg, (128, 128))
-						np_imgs.append(npimg_r.shape)
-	return p_imgs, np_imgs		
+    p_imgs = []
+    np_imgs = []
+    if os.path.exists(path):
+        subjects = os.walk(path).__next__()[1]
+        for subject in subjects:
+            tasks = os.walk(path + subjects[0]).__next__()[1]
+            for task in tasks:
+                files = os.walk(path + subject + '/' + task).__next__()[2]
+                imgs = [f.strip('.jpg') for f in files if f.endswith('.jpg')]
+                for frame in imgs:
+                    if [subject, task, frame] in p_frames:
+                        #pain.append(path + subject + '/' + task + '/' + frame + '.jpg')
+                        ppath = path + subject + '/' + task + '/' + frame + '.jpg'
+                        pimg = cv2.imread(ppath)
+                        pimg_r = cv2.resize(pimg, (128, 128))
+                        p_imgs.append(pimg_r.shape)
+                    elif [subject, task, frame] in np_frames:
+                        #no_pain.append(path + subject + '/' + task + '/' + frame + '.jpg')
+                        nppath = path + subject + '/' + task + '/' + frame + '.jpg'
+                        npimg = cv2.imread(nppath)
+                        npimg_r = cv2.resize(npimg, (128, 128))
+                        np_imgs.append(npimg_r.shape)
+    return p_imgs, np_imgs      
 
+def file_io(qty=10000):
+    p, np = get_landmark_paths(LANDMARK_DATA)
+    p_f, p_land = get_pain_landmarks(p[0:qty])
+    np_f, np_land = get_no_pain_landmarks(np[0:qty])
+    ipp, inpp = get_imgs(IMG_DATA, p_f, np_f)
+
+    return p_land, np_land, ipp, inpp, [1] * qty, [0] * qty
 
 #detect face in image
 def DetectFace(cascade, image, scale_factor=1.1):
@@ -570,19 +575,22 @@ def Exp3Fusion(model, train_x, train_x_Landmarks, train_y, test_x, test_x_Landma
     
 if __name__ == "__main__":
 #    pathBase = 'pain_classification/'
-    pathBase = '/data/scanavan1/AffectiveComputing/Project2/pain_classification/'
-    p_path, np_path = get_landmark_paths(LANDMARK_DATA)
-    p_f, p_land = get_pain_landmarks(p_path[0:10])
-    np_f, np_land = get_no_pain_landmarks(np_path[0:10])
+    # pathBase = '/data/scanavan1/AffectiveComputing/Project2/pain_classification/'
+#     p_path, np_path = get_landmark_paths(LANDMARK_DATA)
+#     p_f, p_land = get_pain_landmarks(p_path[0:10])
+#     np_f, np_land = get_no_pain_landmarks(np_path[0:10])
     
-    p_f_test, p_f_train = top_twenty(p_f)
-    np_f_test, np_f_train = top_twenty(np_f)
-    np_land_test, np_land_train = top_twenty(np_land)
-    p_land_test, p_land_train = top_twenty(p_land)
-#    print(np_f)
-    ipp, inpp = get_imgs(IMG_DATA, p_f, np_f)
+#     p_f_test, p_f_train = top_twenty(p_f)
+#     np_f_test, np_f_train = top_twenty(np_f)
+#     np_land_test, np_land_train = top_twenty(np_land)
+#     p_land_test, p_land_train = top_twenty(p_land)
+# #    print(np_f)
+#     ipp, inpp = get_imgs(IMG_DATA, p_f, np_f)
+
+    p_land, np_land, ipp, inpp, p_ground_truth, np_ground_truth = file_io(10)
 #    print('p type: {}, np type: {}\np_f type: {}, p_land type: {}\nnp_f type: {}, np_land type: {}'.format(type(p), type(np), type(p_f), type(p_land), type(np_f), type(np_land)))
-    print('p_path shape: {}, np_path shape: {}\np_f shape: {}, p_land shape: {}\nnp_f shape: {}, np_land shape: {}'.format(np.shape(p_path), np.shape(np_path), np.shape(p_f), np.shape(p_land), np.shape(np_f), np.shape(np_land)))
+    # print('p_path shape: {}, np_path shape: {}\np_f shape: {}, p_land shape: {}\nnp_f shape: {}, np_land shape: {}'.format(np.shape(p_path), np.shape(np_path), np.shape(p_f), np.shape(p_land), np.shape(np_f), np.shape(np_land)))
+    print('p_land shape: {}, np_land shape: {}\nipp shape: {}, inpp shape: {}\p_ground_truth shape: {}, np_ground_truth shape: {}'.format(np.shape(p_land), np.shape(np_land), np.shape(ipp), np.shape(inpp), np.shape(p_ground_truth), np.shape(np_ground_truth)))
 # #    print('Image reading started at {}'.format(str(datetime.datetime.now())))
 # #    test_x, test_y, train_x, train_y, val_x, val_y = readImages(pathBase)
 # #    test_x, test_x_Landmarks, test_y, train_x, train_x_Landmarks, train_y, val_x, val_x_Landmarks, val_y = readImages(pathBase)
