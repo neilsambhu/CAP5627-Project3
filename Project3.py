@@ -117,13 +117,21 @@ def get_imgs(path, p_frames, np_frames, p_vals, np_vals):
 						np_imgs.append(img)
 						tupList_np.append(imgTup)
 		
+		indices = []
 		for x, frame in enumerate(p_frames):
 			if frame not in tupList_p:
-				p_vals.pop(x)
+				indices.append(x)
+		indices.sort(reverse=True)
+		for idx in indices:
+			p_vals.pop(idx)
 
+		indices = []
 		for x, frame in enumerate(np_frames):
 			if frame not in tupList_np:
-				np_vals.pop(x)
+				indices.append(x)
+		indices.sort(reverse=True)
+		for idx in indices:
+			np_vals.pop(idx)
 
 		return p_imgs, np_imgs, p_vals, np_vals
 
