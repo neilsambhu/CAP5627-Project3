@@ -34,6 +34,7 @@ from sklearn.metrics import confusion_matrix
 from keras import backend as K
 import sys
 import re
+import tensorflow as tf
 
 from sklearn.utils import shuffle
 IMG_DATA = '/data/scanavan1/BP4D+/2D+3D/'
@@ -579,7 +580,10 @@ def Exp2ExtraCredit(train_x_Landmarks, train_y, test_x_Landmarks, test_y):
 
 	# clf = RandomForestClassifier(n_estimators=1).fit(train_x_Landmarks, train_y)
 	model = Sequential()
-	model.add(LSTM(64, input_shape=(249,)))
+	# train_x_Landmarks = tf.keras.backend.reshape(train_x_Landmarks, (None,249))
+	# test_x_Landmarks = tf.keras.backend.reshape(test_x_Landmarks, (None,249))
+	# train_x_Landmarks.resize((1,249))
+	model.add(LSTM(249, input_shape=(249,1)))
 	model.add(keras.layers.Dense(1, activation='sigmoid'))
 	model.compile(optimizer=keras.optimizer.Adam(lr=0.0001),
 		loss=keras.losses.binary_crossentropy,
@@ -639,24 +643,40 @@ def Exp3Fusion(model, train_x, train_x_Landmarks, train_y, test_x, test_x_Landma
 
 #     confusion matrix, classification accuracy, precision, recall, and binary F1 score
 	results(3, test_y, predict_y)
+
+def Exp3ExtraCredit(model, train_x, train_x_Landmarks, train_y, test_x, test_x_Landmarks, test_y):
+#    keras.backend.clear_session()
+	# model.summary()
+	layer_name = 'dense_1'
+	extract = Model(inputs=model.input, outputs=model.get_layer(layer_name).output)
+	dense_features = extract.predict(train_x)		
+	training_data = np.concatenate((dense_features, train_x_Landmarks), axis=1)
+	clf = RandomForestClassifier(n_estimators=1).fit(training_data, train_y)
+
+
+	testing_data = np.concatenate((extract.predict(test_x), test_x_Landmarks), axis=1)
+	predict_y = clf.predict(testing_data)
+
+#     confusion matrix, classification accuracy, precision, recall, and binary F1 score
+	results(5, test_y, predict_y)
 	
 if __name__ == "__main__":
 	print('Image reading started at {}'.format(str(datetime.datetime.now())))
 	
-	# p_land, np_land, ipp, inpp, p_ground_truth, np_ground_truth = file_io(10010)
-	# np_land_test, np_land_train = top_twenty(np_land)
-	# p_land_test, p_land_train = top_twenty(p_land)
-	# p_imgs_test, p_imgs_train = top_twenty(ipp)
-	# np_imgs_test, np_imgs_train = top_twenty(inpp)	 
-	# p_gt_test, p_gt_train = top_twenty(p_ground_truth)
-	# np_gt_test, np_gt_train = top_twenty(np_ground_truth)
+	p_land, np_land, ipp, inpp, p_ground_truth, np_ground_truth = file_io(10010)
+	np_land_test, np_land_train = top_twenty(np_land)
+	p_land_test, p_land_train = top_twenty(p_land)
+	p_imgs_test, p_imgs_train = top_twenty(ipp)
+	np_imgs_test, np_imgs_train = top_twenty(inpp)	 
+	p_gt_test, p_gt_train = top_twenty(p_ground_truth)
+	np_gt_test, np_gt_train = top_twenty(np_ground_truth)
 
-	# land_test = np.array(p_land_test + np_land_test)
-	# land_train = np.array(p_land_train + np_land_train)
-	# imgs_test = np.array(p_imgs_test + np_imgs_test)
-	# imgs_train = np.array(p_imgs_train + np_imgs_train)
-	# gt_test = np.array(p_gt_test + np_gt_test)
-	# gt_train = np.array(p_gt_train + np_gt_train)
+	land_test = np.array(p_land_test + np_land_test)
+	land_train = np.array(p_land_train + np_land_train)
+	imgs_test = np.array(p_imgs_test + np_imgs_test)
+	imgs_train = np.array(p_imgs_train + np_imgs_train)
+	gt_test = np.array(p_gt_test + np_gt_test)
+	gt_train = np.array(p_gt_train + np_gt_train)
 
 	# np.save('land_test', land_test)
 	# np.save('land_train', land_train)
@@ -665,62 +685,21 @@ if __name__ == "__main__":
 	# np.save('gt_test', gt_test)
 	# np.save('gt_train', gt_train)
 
-	land_test = np.load('land_test')
-	land_train = np.load('land_train')
-	imgs_test = np.load('imgs_test')
-	imgs_train = np.load('imgs_train')
-	gt_test = np.load('gt_test')
-	gt_train = np.load('gt_train')
+	# land_test = np.load('land_test')
+	# land_train = np.load('land_train')
+	# imgs_test = np.load('imgs_test')
+	# imgs_train = np.load('imgs_train')
+	# gt_test = np.load('gt_test')
+	# gt_train = np.load('gt_train')
 
-	# missing = []
-	# if land_test.shape[0] != imgs_test.shape[0]:
-	# 	if land_test.shape[0] > imgs_test.shape[0]:
-	# 		for land in land_test:
-	# 			found = False
-	# 			for img in imgs_test:
-	# 				if land[-1] == img[-1]:
-	# 					found == True
-	# 					break
-	# 			if not found:
-	# 				missing.append(land[-1])
-	# 				print('{} missing from imgs_test'.format(land[-1]))
-
-	# 	else:
-	# 		for img in imgs_test:
-	# 			found = False
-	# 			for land in land_test:
-	# 				if land[-1] == img[-1]:
-	# 					found == True
-	# 					break
-	# 			if not found:
-	# 				missing.append(img[-1])
-	# 				print('{} missing from imgs_test'.format(img[-1]))
-
-
-	print('land_test shape: {}'.format(np.shape(land_test)))
-	print('land_train shape: {}'.format(np.shape(land_train)))
-	print('imgs_test shape: {}'.format(np.shape(imgs_test)))
-	print('imgs_train shape: {}'.format(np.shape(imgs_train)))
-	print('gt_test shape: {}'.format(np.shape(gt_test)))
-	print('gt_train shape: {}'.format(np.shape(gt_train)))
-	# print('gt_test: {}'.format(gt_test))
-	# print('gt_train: {}'.format(gt_train))
-	print('Image reading finished at {}'.format(str(datetime.datetime.now())))
+	# print('land_test shape: {}'.format(np.shape(land_test)))
+	# print('land_train shape: {}'.format(np.shape(land_train)))
+	# print('imgs_test shape: {}'.format(np.shape(imgs_test)))
+	# print('imgs_train shape: {}'.format(np.shape(imgs_train)))
+	# print('gt_test shape: {}'.format(np.shape(gt_test)))
+	# print('gt_train shape: {}'.format(np.shape(gt_train)))
+	# print('Image reading finished at {}'.format(str(datetime.datetime.now())))
 	# sys.exit("done")
-	# print('p_land shape: {}, np_land shape: {}\nipp shape: {}, inpp shape: {}\np_ground_truth shape: {}, np_ground_truth shape: {}'.format(np.shape(p_land), np.shape(np_land), np.shape(ipp), np.shape(inpp), np.shape(p_ground_truth), np.shape(np_ground_truth)))
-# #    print('Image reading started at {}'.format(str(datetime.datetime.now())))
-# #    test_x, test_y, train_x, train_y, val_x, val_y = readImages(pathBase)
-# #    test_x, test_x_Landmarks, test_y, train_x, train_x_Landmarks, train_y, val_x, val_x_Landmarks, val_y = readImages(pathBase)
-# #    print('Image reading finished at {}'.format(str(datetime.datetime.now())))
-
-# #    print('Class balance started at {}'.format(str(datetime.datetime.now())))
-# #    unique, counts = np.unique(test_y, return_counts=True)
-# #    print('test_y: {}'.format(dict(zip(unique, counts))))
-# #    unique, counts = np.unique(train_y, return_counts=True)
-# #    print('train_y: {}'.format(dict(zip(unique, counts))))
-# #    unique, counts = np.unique(val_y, return_counts=True)
-# #    print('val_y: {}'.format(dict(zip(unique, counts))))
-# #    print('Class balance finished at {}'.format(str(datetime.datetime.now())))
 
 	print('Model building started at {}'.format(str(datetime.datetime.now())))
 	keras.backend.clear_session()
@@ -728,27 +707,9 @@ if __name__ == "__main__":
 	print('Model building finished at {}'.format(str(datetime.datetime.now())))
 	print('=======================')
 	print('Experiment 1 started at {}'.format(str(datetime.datetime.now())))
-	# fit model to data
-	# time = strftime("%Y-%m-%d--%H-%M-%S", gmtime())
-# #    checkpoint = ModelCheckpoint('{0}{1}_{{epoch:02d}}-{{val_acc:.2f}}.hdf5'.format(pathBase, time),monitor='val_acc', verbose=1, save_best_only=True, mode='max')
-#     # checkpoint = ModelCheckpoint('model.hdf5'.format(pathBase, time),monitor='val_acc', verbose=1, save_best_only=True, mode='max')
-#     # earlyStop = EarlyStopping('val_acc',0.001,25)
-#     # callbacks_list = [checkpoint, earlyStop]
-#    # callbacks_list = [earlyStop]
-
-	model.fit(x=imgs_train, y=gt_train, 
-		batch_size=1, 
-		epochs=5, verbose=2
-#               # callbacks=callbacks_list,
-#               validation_data=(val_x, val_y),
-			  # initial_epoch=0,
-			  # steps_per_epoch=64
-	)
-	# print(model.evaluate(imgs_test, gt_test))
+	model.fit(x=imgs_train, y=gt_train, batch_size=1, epochs=5, verbose=2)
 	test_y_prob = model.predict(imgs_test)
 	test_y_pred = np.round(test_y_prob)
-# #    test_y_pred = np.argmax(test_y_prob, axis=-1)
-	# print('Confusion matrix:\n{}'.format(confusion_matrix(gt_test, test_y_pred)))
 	results(1, gt_test, test_y_pred)
 	print('Experiment 1 finished at {}'.format(str(datetime.datetime.now())))
 	print('=======================')
@@ -759,3 +720,11 @@ if __name__ == "__main__":
 	print('Experiment 3 started at {}'.format(str(datetime.datetime.now())))
 	Exp3Fusion(model, imgs_train, land_train, gt_train, imgs_test, land_test, gt_test)
 	print('Experiment 3 finished at {}'.format(str(datetime.datetime.now())))
+	print('=======================')
+	# print('Experiment 2 (extra credit) started at {}'.format(str(datetime.datetime.now())))
+	# Exp2ExtraCredit(land_train, gt_train, land_test, gt_test)
+	# print('Experiment 2 (extra credit) finished at {}'.format(str(datetime.datetime.now())))
+	# print('=======================')
+	# print('Experiment 3 (extra credit) started at {}'.format(str(datetime.datetime.now())))
+	# Exp3ExtraCredit(model, imgs_train, land_train, gt_train, imgs_test, land_test, gt_test)
+	# print('Experiment 3 (extra credit) finished at {}'.format(str(datetime.datetime.now())))
