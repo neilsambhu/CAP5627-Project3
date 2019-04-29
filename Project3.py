@@ -175,7 +175,8 @@ def file_io(qty=10000):
 	np_f, np_land = get_landmarks(np[0:qty])
 	ipp, inpp, p_land, np_land = get_imgs(IMG_DATA, p_f, np_f, p_land, np_land)
 
-	return p_land, np_land, ipp, inpp, [1] * qty, [0] * qty
+	# return p_land, np_land, ipp, inpp, [1] * qty, [0] * qty
+	return p_land, np_land, ipp, inpp, [1] * len(p_land), [0] * len(np_land)
 
 #detect face in image
 def DetectFace(cascade, image, scale_factor=1.1):
@@ -373,7 +374,7 @@ def buildModel():
 
 #     2 layers of convolution
 	model.add(keras.layers.Conv2D(1, 3, activation='relu', input_shape=(128,128,3)))
-	model.add(keras.layers.BatchNormalization())
+	# model.add(keras.layers.BatchNormalization())
 # #     dropout
 # #    model.add(keras.layers.Dropout(0.50))
 # 	model.add(keras.layers.Conv2D(64, 3, activation='relu'))
@@ -624,8 +625,6 @@ if __name__ == "__main__":
 	print('Image reading started at {}'.format(str(datetime.datetime.now())))
 	
 	p_land, np_land, ipp, inpp, p_ground_truth, np_ground_truth = file_io(10010)
-#     p_f_test, p_f_train = top_twenty(p_f)
-#     np_f_test, np_f_train = top_twenty(np_f)
 	np_land_test, np_land_train = top_twenty(np_land)
 	p_land_test, p_land_train = top_twenty(p_land)
 	p_imgs_test, p_imgs_train = top_twenty(ipp)
@@ -639,6 +638,20 @@ if __name__ == "__main__":
 	imgs_train = np.array(p_imgs_train + np_imgs_train)
 	gt_test = np.array(p_gt_test + np_gt_test)
 	gt_train = np.array(p_gt_train + np_gt_train)
+
+	np.save('land_test', land_test)
+	np.save('land_train', land_train)
+	np.save('imgs_test', imgs_test)
+	np.save('imgs_train', imgs_train)
+	np.save('gt_test', gt_test)
+	np.save('gt_train', gt_train)
+
+	# land_test = np.load('land_test')
+	# land_train = np.load('land_train')
+	# imgs_test = np.load('imgs_test')
+	# imgs_train = np.load('imgs_train')
+	# gt_test = np.load('gt_test')
+	# gt_train = np.load('gt_train')
 
 	# missing = []
 	# if land_test.shape[0] != imgs_test.shape[0]:
