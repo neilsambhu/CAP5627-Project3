@@ -571,6 +571,25 @@ def Exp2RandomForest(train_x_Landmarks, train_y, test_x_Landmarks, test_y):
 #     confusion matrix, classification accuracy, precision, recall, and binary F1 score
 	results(2, test_y, predict_y)
 
+def Exp2ExtraCredit(train_x_Landmarks, train_y, test_x_Landmarks, test_y):
+
+	#layer_name = 'dense_2'
+	#extract = Model(inputs=model.input, outputs=model.get_layer(layer_name).output)
+	#features = extract.predict(train_x)
+
+	# clf = RandomForestClassifier(n_estimators=1).fit(train_x_Landmarks, train_y)
+	model = Sequential()
+	model.add(LSTM(64, input_shape=(249,)))
+	model.add(keras.layers.Dense(1, activation='sigmoid'))
+	model.compile(optimizer=keras.optimizer.Adam(lr=0.0001),
+		loss=keras.losses.binary_crossentropy,
+		metrics=['acc'])
+	model.fit(x=train_x_Landmarks, y=train_y, 
+		batch_size=1, epochs=5, verbose=2)
+	test_y_prob = model.predict(test_x_Landmarks)
+	test_y_pred = np.round(test_y_prob)
+#     confusion matrix, classification accuracy, precision, recall, and binary F1 score
+	results(4, test_y, test_y_pred)
 
 def top_twenty(data):
 	x = len(data)
@@ -624,34 +643,34 @@ def Exp3Fusion(model, train_x, train_x_Landmarks, train_y, test_x, test_x_Landma
 if __name__ == "__main__":
 	print('Image reading started at {}'.format(str(datetime.datetime.now())))
 	
-	p_land, np_land, ipp, inpp, p_ground_truth, np_ground_truth = file_io(10010)
-	np_land_test, np_land_train = top_twenty(np_land)
-	p_land_test, p_land_train = top_twenty(p_land)
-	p_imgs_test, p_imgs_train = top_twenty(ipp)
-	np_imgs_test, np_imgs_train = top_twenty(inpp)	 
-	p_gt_test, p_gt_train = top_twenty(p_ground_truth)
-	np_gt_test, np_gt_train = top_twenty(np_ground_truth)
+	# p_land, np_land, ipp, inpp, p_ground_truth, np_ground_truth = file_io(10010)
+	# np_land_test, np_land_train = top_twenty(np_land)
+	# p_land_test, p_land_train = top_twenty(p_land)
+	# p_imgs_test, p_imgs_train = top_twenty(ipp)
+	# np_imgs_test, np_imgs_train = top_twenty(inpp)	 
+	# p_gt_test, p_gt_train = top_twenty(p_ground_truth)
+	# np_gt_test, np_gt_train = top_twenty(np_ground_truth)
 
-	land_test = np.array(p_land_test + np_land_test)
-	land_train = np.array(p_land_train + np_land_train)
-	imgs_test = np.array(p_imgs_test + np_imgs_test)
-	imgs_train = np.array(p_imgs_train + np_imgs_train)
-	gt_test = np.array(p_gt_test + np_gt_test)
-	gt_train = np.array(p_gt_train + np_gt_train)
+	# land_test = np.array(p_land_test + np_land_test)
+	# land_train = np.array(p_land_train + np_land_train)
+	# imgs_test = np.array(p_imgs_test + np_imgs_test)
+	# imgs_train = np.array(p_imgs_train + np_imgs_train)
+	# gt_test = np.array(p_gt_test + np_gt_test)
+	# gt_train = np.array(p_gt_train + np_gt_train)
 
-	np.save('land_test', land_test)
-	np.save('land_train', land_train)
-	np.save('imgs_test', imgs_test)
-	np.save('imgs_train', imgs_train)
-	np.save('gt_test', gt_test)
-	np.save('gt_train', gt_train)
+	# np.save('land_test', land_test)
+	# np.save('land_train', land_train)
+	# np.save('imgs_test', imgs_test)
+	# np.save('imgs_train', imgs_train)
+	# np.save('gt_test', gt_test)
+	# np.save('gt_train', gt_train)
 
-	# land_test = np.load('land_test')
-	# land_train = np.load('land_train')
-	# imgs_test = np.load('imgs_test')
-	# imgs_train = np.load('imgs_train')
-	# gt_test = np.load('gt_test')
-	# gt_train = np.load('gt_train')
+	land_test = np.load('land_test')
+	land_train = np.load('land_train')
+	imgs_test = np.load('imgs_test')
+	imgs_train = np.load('imgs_train')
+	gt_test = np.load('gt_test')
+	gt_train = np.load('gt_train')
 
 	# missing = []
 	# if land_test.shape[0] != imgs_test.shape[0]:
@@ -719,7 +738,7 @@ if __name__ == "__main__":
 
 	model.fit(x=imgs_train, y=gt_train, 
 		batch_size=1, 
-		epochs=1, verbose=2
+		epochs=5, verbose=2
 #               # callbacks=callbacks_list,
 #               validation_data=(val_x, val_y),
 			  # initial_epoch=0,
