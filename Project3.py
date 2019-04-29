@@ -61,6 +61,7 @@ def get_pain_landmarks(pain_paths):
 	pain = []
 	
 	for v in pain_paths:
+
 		frames.append((v.strip('.bndplus').split('_')))
 		with open(LANDMARK_DATA + v) as flandmarks:
 			landmarks = []
@@ -90,8 +91,10 @@ def get_imgs(path, p_frames, np_frames):
 	# print('p_frames: {}'.format(p_frames))
 	# print('np_frames: {}'.format(np_frames))
 	
-	p_frames = [[k[0], k[1], k[2].lstrip("0")] for k in p_frames]
-	np_frames = [[k[0], k[1], k[2].lstrip("0")] for k in np_frames]
+	# p_frames = [[k[0], k[1], k[2].lstrip("0")] for k in p_frames]
+	# np_frames = [[k[0], k[1], k[2].lstrip("0")] for k in np_frames]
+	p_frames = [[k[0], k[1], str(int(k[2]))] for k in p_frames]
+	np_frames = [[k[0], k[1], str(int(k[2]))] for k in np_frames]
 	
 	p_imgs = []
 	np_imgs = []
@@ -106,13 +109,13 @@ def get_imgs(path, p_frames, np_frames):
 				files = os.walk(path + subject + '/' + task).__next__()[2]
 				imgs = [f.strip('.jpg') for f in files if f.endswith('.jpg')]
 				for frame in imgs:
-					if [subject, task, frame.lstrip("0")] in p_frames:
+					if [subject, task, str(int(frame))] in p_frames:
 						#pain.append(path + subject + '/' + task + '/' + frame + '.jpg')
 						ppath = path + subject + '/' + task + '/' + frame + '.jpg'
 						pimg = cv2.imread(ppath)
 						pimg_r = cv2.resize(pimg, (128, 128))
 						p_imgs.append(pimg_r)
-					elif [subject, task, frame.lstrip("0")] in np_frames:
+					elif [subject, task, str(int(frame))] in np_frames:
 						#no_pain.append(path + subject + '/' + task + '/' + frame + '.jpg')
 						nppath = path + subject + '/' + task + '/' + frame + '.jpg'
 						npimg = cv2.imread(nppath)
@@ -600,7 +603,7 @@ if __name__ == "__main__":
 	# print('gt_test: {}'.format(gt_test))
 	# print('gt_train: {}'.format(gt_train))
 	print('Image reading finished at {}'.format(str(datetime.datetime.now())))
-
+	
 	# print('p_land shape: {}, np_land shape: {}\nipp shape: {}, inpp shape: {}\np_ground_truth shape: {}, np_ground_truth shape: {}'.format(np.shape(p_land), np.shape(np_land), np.shape(ipp), np.shape(inpp), np.shape(p_ground_truth), np.shape(np_ground_truth)))
 # #    print('Image reading started at {}'.format(str(datetime.datetime.now())))
 # #    test_x, test_y, train_x, train_y, val_x, val_y = readImages(pathBase)
@@ -620,7 +623,7 @@ if __name__ == "__main__":
 	keras.backend.clear_session()
 	model = buildModel()
 	print('Model building finished at {}'.format(str(datetime.datetime.now())))
-	
+	print('=======================')
 	print('Experiment 1 started at {}'.format(str(datetime.datetime.now())))
 	# fit model to data
 	# time = strftime("%Y-%m-%d--%H-%M-%S", gmtime())
@@ -645,11 +648,11 @@ if __name__ == "__main__":
 	# print('Confusion matrix:\n{}'.format(confusion_matrix(gt_test, test_y_pred)))
 	results(1, gt_test, test_y_pred)
 	print('Experiment 1 finished at {}'.format(str(datetime.datetime.now())))
-
+	print('=======================')
 	print('Experiment 2 started at {}'.format(str(datetime.datetime.now())))
 	Exp2RandomForest(land_train, gt_train, land_test, gt_test)
 	print('Experiment 2 finished at {}'.format(str(datetime.datetime.now())))
-
+	print('=======================')
 	print('Experiment 3 started at {}'.format(str(datetime.datetime.now())))
 	Exp3Fusion(model, imgs_train, land_train, gt_train, imgs_test, land_test, gt_test)
 	print('Experiment 3 finished at {}'.format(str(datetime.datetime.now())))
