@@ -589,7 +589,7 @@ def Exp2ExtraCredit(train_x_Landmarks, train_y, test_x_Landmarks, test_y):
 		loss=keras.losses.binary_crossentropy,
 		metrics=['acc'])
 	model.fit(x=train_x_Landmarks, y=train_y, 
-		batch_size=1, epochs=5, verbose=2)
+		batch_size=1, epochs=1, verbose=2)
 	test_y_prob = model.predict(test_x_Landmarks)
 	test_y_pred = np.round(test_y_prob)
 #     confusion matrix, classification accuracy, precision, recall, and binary F1 score
@@ -707,7 +707,7 @@ if __name__ == "__main__":
 	print('Model building finished at {}'.format(str(datetime.datetime.now())))
 	print('=======================')
 	print('Experiment 1 started at {}'.format(str(datetime.datetime.now())))
-	model.fit(x=imgs_train, y=gt_train, batch_size=1, epochs=5, verbose=2)
+	model.fit(x=imgs_train, y=gt_train, batch_size=1, epochs=1, verbose=2)
 	test_y_prob = model.predict(imgs_test)
 	test_y_pred = np.round(test_y_prob)
 	results(1, gt_test, test_y_pred)
