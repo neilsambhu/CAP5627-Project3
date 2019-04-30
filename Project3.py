@@ -651,8 +651,16 @@ def Exp3ExtraCredit(model, train_x, train_x_Landmarks, train_y, test_x, test_x_L
 	extract = Model(inputs=model.input, outputs=model.get_layer(layer_name).output)
 	dense_features = extract.predict(train_x)		
 	training_data = np.concatenate((dense_features, train_x_Landmarks), axis=1)
-	clf = RandomForestClassifier(n_estimators=1).fit(training_data, train_y)
 
+	model.add(LSTM(498, input_shape=(498,1)))
+	model.add(keras.layers.Dense(1, activation='sigmoid'))
+	model.compile(optimizer=keras.optimizer.Adam(lr=0.0001),
+		loss=keras.losses.binary_crossentropy,
+		metrics=['acc'])
+	model.fit(x=training_data, y=train_y, 
+		batch_size=1, epochs=1, verbose=2)
+	test_y_prob = model.predict(test_x_Landmarks)
+	test_y_pred = np.round(test_y_prob)
 
 	testing_data = np.concatenate((extract.predict(test_x), test_x_Landmarks), axis=1)
 	predict_y = clf.predict(testing_data)
